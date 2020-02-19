@@ -6,38 +6,30 @@
 
 int east = 0, west = 0;    // # of cars in each direction
 
-sem_t mutex;
-
-pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
-
+sem_t on_the_bridge;
 
 void cross(int direction)
 {
 
-    // wait for any cars already going in opposite direction
     if ((0 == direction && west) || (1 == direction && east)) {
-        //busy.wait;
         if(0==direction)
         {
-            printf("waiting [<-] east=%d thread=%ld\n", east, pthread_self());
+            printf("waiting [<-] east=%d west=%d thread=%ld\n", east, west, pthread_self());
         } else {
-            printf("waiting [->] east=%d thread=%ld\n", west, pthread_self());
+            printf("waiting [->] west=%d east=%d thread=%ld\n", west, east, pthread_self());
         }
 
-        //sem_wait(&mutex);
-        pthread_mutex_lock( &mutex1 );
-        //printf("cross | direction=%d thread=%ld\n", direction, pthread_self());
+        sem_wait(&on_the_bridge);
     }
 
 
-    // now increment counter of cars heading in my direction
-    if (0 == direction)    // NB: 'else' is not appropriate here!
+    if (0 == direction)
     {
         east++;
-        printf("(+) [<-] east=%d, thread=%ld\n", east, pthread_self());
+        printf("(+) [<-] east=%d west=%d thread=%ld\n", east, west, pthread_self());
     } else {
         west++;
-        printf("(+) [->] west=%d, thread=%ld\n", west, pthread_self());
+        printf("(+) [->] west=%d east=%d thread=%ld\n", west, east, pthread_self());
     }
 
 }
@@ -45,25 +37,20 @@ void cross(int direction)
 void leave(int direction)
 {
 
-    // if we're the last car off heading east,
-    // signal all west traffic that it's ok to proceed
-    if (0 == direction && 0 == --east) {
-        //while (busy.queue) busy.signal;
-        sleep(2);
-        printf("leave [<-] direction=%d, thread=%ld\n", direction, pthread_self());
-        //sem_post(&mutex);
-        pthread_mutex_unlock( &mutex1 );
+    if (0 == direction && 0 < east) {
+
+        --east;
+        printf("leave [<-] direction=%d east=%d west=%d thread=%ld\n", direction, east, west, pthread_self());
+        //sleep(10);
+        sem_post(&on_the_bridge);
     }
 
 
-        // if we're the last car off heading west,
-        // signal all east traffic that it's ok to proceed
-    else if (1 == direction && 0 == --west) {
-        //while (busy.queue) busy.signal;
-        sleep(2);
-        printf("leave [->] direction=%d, thread=%ld\n", direction, pthread_self());
-        //sem_post(&mutex);
-        pthread_mutex_unlock( &mutex1 );
+    else if (1 == direction && 0 < west) {
+        --west;
+        printf("leave [->] direction=%d west=%d east=%d thread=%ld\n", direction, west, east, pthread_self());
+        //sleep(10);
+        sem_post(&on_the_bridge);
     }
 
 }
@@ -72,26 +59,30 @@ void *thread(int *direction)
 {
     cross(direction);
     leave(direction);
-    cross(direction);
-    leave(direction);
 }
 
 int main() {
 
-    sem_init(&mutex, 0, 2);
-    pthread_t t1, t2;
+    sem_init(&on_the_bridge, 0, 1);
+    pthread_t t1, t2, t3, t4;
 
-    int iret1, iret2;
+    int iret1, iret2, iret3, iret4;
     iret1 = pthread_create(&t1, NULL, thread, 0);
-    //sleep(2);
     iret2 = pthread_create(&t2, NULL, thread, 1);
+
+    iret3 = pthread_create(&t3, NULL, thread, 0);
+    iret4 = pthread_create(&t4, NULL, thread, 1);
     pthread_join(t1, NULL);
     pthread_join(t2, NULL);
-    sem_destroy(&mutex);
+    pthread_join(t3, NULL);
+    pthread_join(t4, NULL);
+    sem_destroy(&on_the_bridge);
     printf("\n\n\nwest=%d,", west);
     printf("east=%d\n\n\n", east);
     printf("Thread 1 returns: %d\n",iret1);
     printf("Thread 2 returns: %d\n",iret2);
+    printf("Thread 3 returns: %d\n",iret3);
+    printf("Thread 4 returns: %d\n",iret4);
 
     sleep(1);
     exit(0);
