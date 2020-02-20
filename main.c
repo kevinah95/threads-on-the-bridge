@@ -1,8 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h> //Header file for sleep(). man 3 sleep for details.
+#include <unistd.h>
+#include <math.h>
 #include <pthread.h>
 #include <semaphore.h>
+
+#define EAST_THREAD_SIZE 2
+#define WEST_THREAD_SIZE 2
+#define EAST_DIRECTION 0
+#define WEST_DIRECTION 1
 
 int east = 0, west = 0;    // # of cars in each direction
 
@@ -41,7 +47,7 @@ void leave(int direction)
 
         --east;
         printf("leave [<-] direction=%d east=%d west=%d thread=%ld\n", direction, east, west, pthread_self());
-        //sleep(10);
+        sleep(1);
         sem_post(&on_the_bridge);
     }
 
@@ -49,7 +55,7 @@ void leave(int direction)
     else if (1 == direction && 0 < west) {
         --west;
         printf("leave [->] direction=%d west=%d east=%d thread=%ld\n", direction, west, east, pthread_self());
-        //sleep(10);
+        sleep(1);
         sem_post(&on_the_bridge);
     }
 
@@ -61,28 +67,43 @@ void *thread(int *direction)
     leave(direction);
 }
 
+double ran_expo(double lambda){
+    double u;
+    u = rand() / (RAND_MAX + 1.0);
+    return -log(1- u) / lambda;
+}
+
 int main() {
 
     sem_init(&on_the_bridge, 0, 1);
-    pthread_t t1, t2, t3, t4;
+    pthread_t east_cars[EAST_THREAD_SIZE], west_cars[WEST_THREAD_SIZE];
+    int thread_total = EAST_THREAD_SIZE + WEST_THREAD_SIZE;
+    int quantity_of_east = 0;
+    int quantity_of_west = 0;
+    srand(time(NULL));
+    while(thread_total != 0){
+        pthread_create(&east_cars[quantity_of_east], NULL, thread, EAST_DIRECTION);
+        quantity_of_east++;
+        thread_total--;
+        int random_number = (int)ran_expo(0.7);
+        printf("random=%d", random_number);
+        sleep(random_number);
+        pthread_create(&west_cars[quantity_of_west], NULL, thread, WEST_DIRECTION);
+        quantity_of_west++;
+        thread_total--;
+    }
 
-    int iret1, iret2, iret3, iret4;
-    iret1 = pthread_create(&t1, NULL, thread, 0);
-    iret2 = pthread_create(&t2, NULL, thread, 1);
+    for (int i = 0; i < EAST_THREAD_SIZE; ++i) {
+        pthread_join(east_cars[i], NULL);
+    }
 
-    iret3 = pthread_create(&t3, NULL, thread, 0);
-    iret4 = pthread_create(&t4, NULL, thread, 1);
-    pthread_join(t1, NULL);
-    pthread_join(t2, NULL);
-    pthread_join(t3, NULL);
-    pthread_join(t4, NULL);
+    for (int j = 0; j < WEST_THREAD_SIZE; ++j) {
+        pthread_join(west_cars[j], NULL);
+    }
+
     sem_destroy(&on_the_bridge);
     printf("\n\n\nwest=%d,", west);
     printf("east=%d\n\n\n", east);
-    printf("Thread 1 returns: %d\n",iret1);
-    printf("Thread 2 returns: %d\n",iret2);
-    printf("Thread 3 returns: %d\n",iret3);
-    printf("Thread 4 returns: %d\n",iret4);
 
     sleep(1);
     exit(0);
