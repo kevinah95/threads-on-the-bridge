@@ -39,17 +39,17 @@ void cross(int direction)
         printf("\x1b[32;1m\x1b[1m(+) West car going to the bridge [->] west=%d east=%d thread=%ld\x1b[0m\n", west, east, pthread_self());
     }
     int cars_waiting = (direction == EAST_DIRECTION) ? east : west;
-    pthread_mutex_lock(&lock_bridge);
+    sem_wait(&on_the_bridge);//pthread_mutex_lock(&lock_bridge);
     if(direction == bridge_actual_direction || (bridge_actual_direction == -1 && cars_waiting == 1)){
         
     }else{
         if(EAST_DIRECTION == direction)
         {
             printf("\x1b[31;1m\x1b[1mEast car waiting [<-] east=%d west=%d thread=%ld\x1b[0m\n", east, west, pthread_self());
-            pthread_cond_wait(&condition_east_pass, &lock_bridge); 
+            
         } else {
             printf("\x1b[31;1m\x1b[1mWest car waiting [->] west=%d east=%d thread=%ld\x1b[0m\n", west, east, pthread_self());
-            pthread_cond_wait(&condition_west_pass, &lock_bridge);
+       
         }
     }
     bridge_actual_direction = direction;
@@ -70,14 +70,14 @@ void leave(int direction)
     }
     if((east == 0 && bridge_actual_direction == EAST_DIRECTION) || (east == 0 && west > 0)){
         bridge_actual_direction = -1;
-        pthread_cond_signal(&condition_west_pass);
+        sem_post(&on_the_bridge);//pthread_cond_signal(&condition_west_pass);
     }   
     else if((west == 0 && bridge_actual_direction == WEST_DIRECTION) || (west == 0 && east > 0)){
         bridge_actual_direction = -1;
-        pthread_cond_signal(&condition_east_pass);
+        sem_post(&on_the_bridge);//pthread_cond_signal(&condition_east_pass);
     }
         
-    pthread_mutex_unlock(&lock_bridge); 
+    //pthread_mutex_unlock(&lock_bridge); 
 }
 
 void *thread(int *direction)
