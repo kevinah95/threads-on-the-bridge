@@ -78,12 +78,12 @@ void *thread_creation(struct car_creation_thread *car_thread){
     pthread_t* direction_cars = malloc(sizeof(pthread_t) * car_thread->size);
     while(car_thread->size > 0){
         pthread_create(&direction_cars[quantity], NULL, thread, car_thread->direction);
-        quantity--;
+        quantity++;
         car_thread->size--;
         double random_number = ran_expo(car_thread->medium);
         sleep(random_number);
     }
-    for (int i = 0; i < car_thread->size; ++i) {
+    for (int i = 0; i < quantity; ++i) {
         pthread_join(direction_cars[i], NULL);
     }
     free(direction_cars);
