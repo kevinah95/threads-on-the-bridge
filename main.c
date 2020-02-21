@@ -33,7 +33,6 @@ void cross(int direction)
         sem_wait(&on_the_bridge);
     }
 
-
     if (EAST_DIRECTION == direction)
     {
         east++;
@@ -42,7 +41,6 @@ void cross(int direction)
         west++;
         printf("(+) [->] west=%d east=%d thread=%ld\n", west, east, pthread_self());
     }
-
 }
 
 void leave(int direction)
@@ -55,14 +53,12 @@ void leave(int direction)
         sem_post(&on_the_bridge);
     }
 
-
     else if (WEST_DIRECTION == direction && 0 < west) {
         --west;
         printf("leave [->] direction=%s west=%d east=%d thread=%ld\n", name(direction), west, east, pthread_self());
         sleep(1);
         sem_post(&on_the_bridge);
     }
-
 }
 
 void *thread(int *direction)
@@ -80,11 +76,11 @@ double ran_expo(double lambda){
 void *thread_creation(struct car_creation_thread *car_thread){
     int quantity = 0;
     pthread_t* direction_cars = malloc(sizeof(pthread_t) * car_thread->size);
-    while(car_thread->size > 0){        
+    while(car_thread->size > 0){
         pthread_create(&direction_cars[quantity], NULL, thread, car_thread->direction);
-        quantity--;        
+        quantity--;
         car_thread->size--;
-        int random_number = (int)ran_expo(car_thread->medium);
+        double random_number = ran_expo(car_thread->medium);
         sleep(random_number);
     }
     for (int i = 0; i < car_thread->size; ++i) {
@@ -94,11 +90,24 @@ void *thread_creation(struct car_creation_thread *car_thread){
 }
 
 int main(int argc, char *argv[]) {
-    int WEST_THREAD_SIZE = atoi(argv[1]);
-    int EAST_THREAD_SIZE  = atoi(argv[2]);
+     int WEST_THREAD_SIZE;
+     int EAST_THREAD_SIZE;
 
-    printf("West cars length: %i\n", WEST_THREAD_SIZE); 
-    printf("East cars length: %i\n", EAST_THREAD_SIZE); 
+    if (argc <= 1) {
+      printf("A random number of cars for both directions is set.\n");
+      WEST_THREAD_SIZE = rand() % 6;
+      EAST_THREAD_SIZE = rand() % 6;
+    } else if(argc <= 2) {
+      printf("A random number of cars for EAST direction is set.\n");
+      WEST_THREAD_SIZE = atoi(argv[1]);
+      EAST_THREAD_SIZE = rand() % 6;
+    } else {
+      WEST_THREAD_SIZE = atoi(argv[1]);
+      EAST_THREAD_SIZE  = atoi(argv[2]);
+    }
+
+    printf("West cars length: %i\n", WEST_THREAD_SIZE);
+    printf("East cars length: %i\n", EAST_THREAD_SIZE);
 
     sem_init(&on_the_bridge, 0, 1);
 
@@ -130,4 +139,3 @@ int main(int argc, char *argv[]) {
     sleep(1);
     exit(0);
 }
-
