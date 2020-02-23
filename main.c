@@ -48,10 +48,10 @@ void cross(int direction)
     {
         east++;
         //It rints the name of the process.
-        printf("\x1b[32;1m\x1b[1m(+) East car going to the bridge [<-] east=%d west=%d thread=%ld\x1b[0m\n", east, west, pthread_self());
+        printf("\x1b[32;1m\x1b[1m(+) Cars created [<-] east=%d west=%d thread=%ld\x1b[0m\n", east, west, pthread_self());
     } else {
         west++;
-        printf("\x1b[32;1m\x1b[1m(+) West car going to the bridge [->] west=%d east=%d car thread=%ld\x1b[0m\n", west, east, pthread_self());
+        printf("\x1b[32;1m\x1b[1m(+) Cars created [->] west=%d east=%d car thread=%ld\x1b[0m\n", west, east, pthread_self());
     }
     //Cars waiting to pass
     int cars_waiting = (direction == EAST_DIRECTION) ? east : west;
