@@ -19,7 +19,7 @@ cars to the west will have the traffic light on 1*/
 int east = 0, west = 0;    // # of cars in each direction
 
 //Semaphore pointer
-sem_t on_the_bridge;
+sem_t on_the_bridge, screen;
 
 /*These pthread_cond_t are a wait for the thread to activate
   when a specific condition happens*/
@@ -48,10 +48,14 @@ void cross(int direction)
     {
         east++;
         //It rints the name of the process.
+        sem_wait(&screen);
         printf("\x1b[32;1m\x1b[1m(+) Cars created [<-] east=%d west=%d thread=%ld\x1b[0m\n", east, west, pthread_self());
+        sem_post(&screen);
     } else {
         west++;
+        sem_wait(&screen);
         printf("\x1b[32;1m\x1b[1m(+) Cars created [->] west=%d east=%d car thread=%ld\x1b[0m\n", west, east, pthread_self());
+        sem_post(&screen);
     }
     //Cars waiting to pass
     int cars_waiting = (direction == EAST_DIRECTION) ? east : west;
@@ -63,12 +67,14 @@ void cross(int direction)
         if(EAST_DIRECTION == direction)
         {
             //Cars waiting to pass (east).
-            printf("\x1b[31;1m\x1b[1mEast car waiting [<-] east=%d west=%d car thread=%ld\x1b[0m\n", east, west, pthread_self());
-            
+            sem_wait(&screen);
+            printf("\x1b[31;1m\x1b[1m(...)East car waiting [<-] east=%d west=%d car thread=%ld\x1b[0m\n", east, west, pthread_self());
+            sem_post(&screen);
         } else {
             //Cars waiting to pass (west)
-            printf("\x1b[31;1m\x1b[1mWest car waiting [->] west=%d east=%d thread=%ld\x1b[0m\n", west, east, pthread_self());
-       
+            sem_wait(&screen);
+            printf("\x1b[31;1m\x1b[1m(...)West car waiting [->] west=%d east=%d thread=%ld\x1b[0m\n", west, east, pthread_self());
+            sem_post(&screen);
         }
         //the traffic light waits until the car on the bridge passes.
         sem_wait(&on_the_bridge);
@@ -83,12 +89,16 @@ void leave(int direction)
 //if the car is going est
     if (EAST_DIRECTION == direction && 0 < east) {
         --east;
-        printf("East car leaving [<-] direction=%s east=%d west=%d thread=%ld\n", name(direction), east, west, pthread_self());
+        sem_wait(&screen);
+        printf("(--)East car leaving [<-] direction=%s east=%d west=%d thread=%ld\n", name(direction), east, west, pthread_self());
+        sem_post(&screen);
     }
 //if the car is going est
     else if (WEST_DIRECTION == direction && 0 < west) {
         --west;
-        printf("West car leaving [->] direction=%s west=%d east=%d thread=%ld\n", name(direction), west, east, pthread_self());
+        sem_wait(&screen);
+        printf("(--)West car leaving [->] direction=%s west=%d east=%d thread=%ld\n", name(direction), west, east, pthread_self());
+        sem_post(&screen); 
     }
     //if the bridge is blocked.
     if((east == 0 && bridge_actual_direction == EAST_DIRECTION) || (east == 0 && west > 0)){
@@ -167,6 +177,7 @@ int main(int argc, char *argv[]) {
     printf("Quantity of cars heading east: %i\n", EAST_THREAD_SIZE);
 
     sem_init(&on_the_bridge, 0, 1);
+    sem_init(&screen, 0, 1);
 
     pthread_t* thread_creation_list = malloc(sizeof(pthread_t) * 2);
     //pthread_t east_cars[EAST_THREAD_SIZE], west_cars[WEST_THREAD_SIZE];
@@ -192,6 +203,7 @@ int main(int argc, char *argv[]) {
     printf("\x1b[0m");
     
     sem_destroy(&on_the_bridge);
+    sem_destroy(&screen);
     free(thread_creation_list);
     //number of cars that have passed the bridge
     printf("\n\n\ncars that have not passed the bridge yet westbound=%d\n", west);
