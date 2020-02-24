@@ -21,14 +21,6 @@ int east = 0, west = 0;    // # of cars in each direction
 //Semaphore pointer
 sem_t on_the_bridge, screen;
 
-/*These pthread_cond_t are a wait for the thread to activate
-  when a specific condition happens*/
-pthread_cond_t condition_west_pass = PTHREAD_COND_INITIALIZER;
-pthread_cond_t condition_east_pass = PTHREAD_COND_INITIALIZER;  
-
-//Exclusive value.
-pthread_mutex_t lock_bridge = PTHREAD_MUTEX_INITIALIZER;
-
 //Direction value
 int bridge_actual_direction = -1;
 
@@ -180,22 +172,21 @@ int main(int argc, char *argv[]) {
     sem_init(&screen, 0, 1);
 
     pthread_t* thread_creation_list = malloc(sizeof(pthread_t) * 2);
-    //pthread_t east_cars[EAST_THREAD_SIZE], west_cars[WEST_THREAD_SIZE];
     int thread_total = EAST_THREAD_SIZE + WEST_THREAD_SIZE;
 
     srand(time(NULL));
 
     //structs definition.
-    struct car_creation_thread thread_weast;
-    thread_weast.direction = WEST_DIRECTION;
-    thread_weast.size = WEST_THREAD_SIZE;
-    thread_weast.medium = 0.4;
+    struct car_creation_thread thread_west;
+    thread_west.direction = WEST_DIRECTION;
+    thread_west.size = WEST_THREAD_SIZE;
+    thread_west.medium = 0.4;
     struct car_creation_thread thread_east;
     thread_east.direction = EAST_DIRECTION;
     thread_east.size = EAST_THREAD_SIZE;
     thread_east.medium = 0.7;
 
-    pthread_create(&thread_creation_list[0], NULL, thread_creation, &thread_weast);
+    pthread_create(&thread_creation_list[0], NULL, thread_creation, &thread_west);
     pthread_create(&thread_creation_list[1], NULL, thread_creation, &thread_east);
     pthread_join(thread_creation_list[0], NULL);
     pthread_join(thread_creation_list[1], NULL);
