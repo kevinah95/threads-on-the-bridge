@@ -14,21 +14,38 @@
 -Quantity of cars heading west: será el número de carros que se dirigirán hacia el oeste.
 -Quantity of cars heading east: será el número de carros que se dirigirán hacia el este.
 
-- Cars created [->] west=1 east=0 car thread=140705463273216. En donde 
-west: será la cantidad de carros creados que se dirigirán hacia el oeste.
-east: será el número de carros creados que se dirigirán hacia el este.
+Los carros se crean 1 por 1.
+
+(+) Cars created (WEST) [->] west=1 east=0 thread=140302320432896. En donde:
+ 
+(+) Cars created (WEST/): la dirección en la que se crea el nuevo carro.
+west: será la cantidad de carros creados hasta el momento que se dirigirán hacia el oeste.
+east: será la cantidad de carros creados hasta el momento que se dirigirán hacia el este.
 thread: la identificación del hilo que se está ejecutando.
 
--East car waiting [<-] east=1 west/east=1 thread=140705454880512
-east: cantidad de carros esperando pasar hacia el este/oeste.
+(...)West/east car arrive to the bridge [->] west=1 east=2 west_pass/east_pass=1 thread=140302320432896
+Este mensaje indica la cantidad de carros esperando pasar hacia el este/oeste. En donde:
+(...)West car arrive to the bridge: indica que un carro que desea pasar el puente hacia el oeste ha llegado.
+(...)East car arrive to the bridge: indica que un carro que desea pasar el puente hacia el este ha llegado.
+west: indica la cantidad de carros que han llegado para pasar el puente hacia el oeste.
+east: indica la cantidad de carros que han llegado para pasar el puente hacia el este.
+west_pass: indica que de los carros que han llegado, la cantidad de carros que logra pasar hacia el oeste. 
+east_pass: indica que de los carros que han llegado, la cantidad de carros que logra pasar hacia el este. 
 
--cars that have not passed the bridge yet westbound/eastbound=0
-Al finalizar el programa estos contadores deberían de estar en 0 ya que corresponden a la cantidad de carros que faltan por pasar el puente hacia el oeste(westbound) o hacia el este(eastbound).
+(...)West/east start to pass [->] west_pass=1  thread=140302320432896. En donde:
+(...)West start to pass: indica que hay un carro pasando hacia el oeste.
+(...)East start to pass: indica que hay un carro pasando hacia el este.
+
+(--)West/east car leave [->] direction=WEST east=2 west=1 thread=140302320432896. En donde:
+(--)West car leave: indica que la dirección del carro que está pasando el puente en ese momento es oeste.
+(--)East car leave: indica que la dirección del carro que está pasando el puente en ese momento es este.
+east: cantidad de carros que deben pasar hacia el este.
+west: cantidad de carros que deben pasar hacia el oeste.
 
 
-El símbolo [<-] -- significa que ingresa un carro/thread en dirección este.
-La concatenación leave [<-] -- significa que el carro ya pasó por el puente.
-La concatenación waiting [->] -- corresponde a los carroa que están esperando que el puente se desocupe para ir hacia el oeste.
+El símbolo [<-] -- significa este.
+El símbolo [->] -- significa oeste.
+
 
 
 
