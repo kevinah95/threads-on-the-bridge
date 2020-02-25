@@ -14,23 +14,29 @@
 -Quantity of cars heading west: será el número de carros que se dirigirán hacia el oeste.
 -Quantity of cars heading east: será el número de carros que se dirigirán hacia el este.
 
-- Cars created [->] west=1 east=0 car thread=140705463273216. En donde 
-west: será la cantidad de carros creados que se dirigirán hacia el oeste.
+(+) Cars created (EAST) [->] west=1 east=0 car thread=140705463273216. En donde 
+west: será la cantidad de carros creados actualmente que se dirigirán hacia el oeste.
 east: será el número de carros creados que se dirigirán hacia el este.
 thread: la identificación del hilo que se está ejecutando.
 
--East car waiting [<-] east=1 west/east=1 thread=140705454880512
-east: cantidad de carros esperando pasar hacia el este/oeste.
+(...) East car waiting [<-] west_pass/east_pass=1 thread=140705454880512
+west_pass/east_pass=: cantidad de carros esperando pasar hacia el este/oeste.
 
--cars that have not passed the bridge yet westbound/eastbound=0
-Al finalizar el programa estos contadores deberían de estar en 0 ya que corresponden a la cantidad de carros que faltan por pasar el puente hacia el oeste(westbound) o hacia el este(eastbound).
+(...) East start to pass [<-] west_pass/east_pass=1 thread=140558106359552
+west_pass/east_pass=: cantidad de carros esperando pasar hacia el oeste/este.
+Este mensaje solo ocurre para el primer vehiculo en la fila, que esta esperando por usar el puente.
 
+(...) East passing the bridge [<-] west_pass/east_pass=1 thread=140558106359552
+west_pass/east_pass=: cantidad de carros pasando hacia el oeste/este.
 
-El símbolo [<-] -- significa que ingresa un carro/thread en dirección este.
-La concatenación leave [<-] -- significa que el carro ya pasó por el puente.
-La concatenación waiting [->] -- corresponde a los carroa que están esperando que el puente se desocupe para ir hacia el oeste.
+(--) West/east car leave [->] direction=WEST/EAST east=2 west=1 thread=140302320432896. 
+Indica: que la dirección del carro que pasó el puente en ese momento, la direccion de ve reflejada en las flechas y direction.
 
+El símbolo [<-] -- significa este. El símbolo [->] -- significa oeste.
 
+## Funcinamiento
+
+Todos los puntos solicitados en las instrucciones funcionan correctamente.
 
 
 
