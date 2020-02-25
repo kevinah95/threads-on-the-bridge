@@ -5,7 +5,7 @@
 #include <pthread.h>
 #include <semaphore.h>
 
-/*DDefinition of constants. Cars to the east will have the traffic light on 0
+/*Definition of constants. Cars to the east will have the traffic light on 0
 cars to the west will have the traffic light on 1*/
 #define EAST_DIRECTION 0
 #define WEST_DIRECTION 1
@@ -17,21 +17,21 @@ cars to the west will have the traffic light on 1*/
 
 
 int east = 0, west = 0;    // # of cars in each direction
-int east_pass = 0, west_pass = 0;    // # Cada uno delos carros que estan en el puente
+int east_pass = 0, west_pass = 0;    // # of cars from each direction on the bridge
 int bridge_direction = -1;    // # of cars in each direction
 
-pthread_mutex_t mut_east = PTHREAD_MUTEX_INITIALIZER; //Semaforo para detener los del este
-pthread_mutex_t mut_west = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mut_east = PTHREAD_MUTEX_INITIALIZER; //Semaphore to stop cars from east
+pthread_mutex_t mut_west = PTHREAD_MUTEX_INITIALIZER; //Semaphore to stop cars from west
 
-pthread_cond_t con_east = PTHREAD_COND_INITIALIZER; //Condicionador para hacer brohgcast a los del este
-pthread_cond_t con_west = PTHREAD_COND_INITIALIZER;
+pthread_cond_t con_east = PTHREAD_COND_INITIALIZER; //Condition to broadcast east side
+pthread_cond_t con_west = PTHREAD_COND_INITIALIZER; //Condition to broadcast west side
 
 
 //Semaphore pointer
 sem_t sem_real_bridge, screen, sem_order;
-//El primero es para ver el puente si está libre
-//Segundo para la impresion
-//El tercero es para control de las variables de control
+//The first one is to see if the brige is free
+//Second is for print
+//Third one is for manage the conditional variables
 
 
 //Cars thread struct.
@@ -49,7 +49,7 @@ void cross(int direction)
 
     if (EAST_DIRECTION == direction)
     {   
-        //El carro creado es del este
+        //East car created
         sem_wait(&sem_order);
         east++;
         sem_post(&sem_order);
@@ -59,7 +59,7 @@ void cross(int direction)
         fflush(stdin); 
         sem_post(&screen);
     } else {
-        //El carro creado es del oeste
+        //West car created
         sem_wait(&sem_order);
         west++;
         sem_post(&sem_order);
@@ -75,7 +75,7 @@ void cross(int direction)
 
     if(EAST_DIRECTION == direction)
     {
-        //Se espera a que los carros lleguen al puente.
+        //We wait for the cars to arrive into the bridge
         sem_wait(&sem_order);
         east_pass++;
         actual_east_pass = east_pass;
@@ -85,7 +85,7 @@ void cross(int direction)
         sem_post(&screen);
         sem_post(&sem_order);
 
-        if (bridge_direction == WEST_DIRECTION){ //Direccion del puente es opuesta
+        if (bridge_direction == WEST_DIRECTION){ //Direction of the brige is in the opposite
             sem_wait(&screen);
             printf("\x1b[31;1m\x1b[1m(...)East waiting [<-] east_pass=%d  thread=%ld\x1b[0m\n", east_pass, pthread_self());
             fflush(stdin); 
@@ -93,7 +93,7 @@ void cross(int direction)
         }
 
         if (bridge_direction != EAST_DIRECTION && actual_east_pass == 1){
-            //Direccion opuesta libre, soy el primero
+            //Opposite direction free, I'm the first
 
             sem_wait(&screen);
             fflush(stdin); 
@@ -107,9 +107,9 @@ void cross(int direction)
             sem_post(&screen);   
             pthread_cond_broadcast(&con_east);
 
-        }else if (bridge_direction != EAST_DIRECTION){ // Direccion opuesta y no es el primero
+        }else if (bridge_direction != EAST_DIRECTION){ //Opposite direction and is not the fisrt
             pthread_mutex_lock(&mut_east);
-            pthread_cond_wait(&con_east, &mut_east);//Esperamos a que el primero avance
+            pthread_cond_wait(&con_east, &mut_east);//We wait for the first one to move on
             pthread_mutex_unlock(&mut_east);
         }
 
@@ -120,7 +120,7 @@ void cross(int direction)
 
     } else {
         //(WEST)
-        //Se espera a que los carros lleguen al puente.
+        //We wait for the cars to arrive into the bridge
         sem_wait(&sem_order);
         west_pass++;
         actual_west_pass =  west_pass;
@@ -130,7 +130,7 @@ void cross(int direction)
         sem_post(&screen);
         sem_post(&sem_order);
 
-        if (bridge_direction == EAST_DIRECTION){ //El puente esta en direccion opuesta
+        if (bridge_direction == EAST_DIRECTION){ //Direction of the brige is in the opposite
             sem_wait(&screen);
             printf("\x1b[31;1m\x1b[1m(...)West waiting [->] west_pass=%d  thread=%ld\x1b[0m\n", west_pass, pthread_self());
             fflush(stdin); 
@@ -138,7 +138,7 @@ void cross(int direction)
         }
         
         if (bridge_direction != WEST_DIRECTION && actual_west_pass == 1){
-            //Direccion opuesta libre, soy el primero
+            //Opposite direction free, I'm the first
 
             sem_wait(&screen);
             fflush(stdin); 
@@ -152,7 +152,7 @@ void cross(int direction)
             sem_post(&screen);
             pthread_cond_broadcast(&con_west);
 
-        }else if (bridge_direction != WEST_DIRECTION){ // Direccion opuesta y no es el primero
+        }else if (bridge_direction != WEST_DIRECTION){ //Opposite direction and is not the fisrt
             pthread_mutex_lock(&mut_west);
             pthread_cond_wait(&con_west, &mut_west);
             pthread_mutex_unlock(&mut_west);
@@ -167,10 +167,10 @@ void cross(int direction)
 
 void leave(int direction)
 {
-//Tiempo de ejecucion dentro del puento
+//Time inside the bridge
 sleep(2);
 
-//Puente es en dirreccion este
+    //Bridge is on east side
     if (EAST_DIRECTION == direction) {
         sem_wait(&sem_order);
         east--;
@@ -187,7 +187,7 @@ sleep(2);
         }
         sem_post(&sem_order);
     }
-//Puente es en dirreccion oeste
+    //Bridge is on west side
     else if (WEST_DIRECTION == direction) {
         sem_wait(&sem_order);
         west--;
