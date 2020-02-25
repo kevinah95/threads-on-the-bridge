@@ -301,6 +301,12 @@ int main(int argc, char *argv[]) {
   sem_destroy(&sem_real_bridge);
   free(thread_creation_list);
 
+  pthread_mutex_destroy(&mut_west);
+  pthread_mutex_destroy(&mut_east);
+
+  pthread_cond_destroy(&con_west);
+  pthread_cond_destroy(&con_east);  
+
   sleep(1);
   exit(0);
 }
